@@ -1,0 +1,36 @@
+plugins {
+	id 'org.springframework.boot' version '2.3.12.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+}
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+def ignite_version = '2.12.0';
+
+configurations.all {
+	resolutionStrategy {
+		force 'com.h2database:h2:1.4.197'
+	}
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'com.h2database:h2:1.4.197'
+	implementation "org.apache.ignite:ignite-spring-data-2.2-ext:1.0.0"
+	implementation "org.apache.ignite:ignite-core:${ignite_version}"
+	implementation "org.apache.ignite:ignite-indexing:${ignite_version}"
+	implementation "org.apache.ignite:ignite-spring:${ignite_version}"
+	implementation "org.springframework.data:spring-data-commons"
+}
+
+test {
+	useJUnitPlatform()
+}
