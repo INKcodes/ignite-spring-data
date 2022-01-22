@@ -1,7 +1,5 @@
 package ink;
 
-import org.apache.ignite.springdata22.repository.support.IgniteRepositoryFactory;
-import org.apache.ignite.springdata22.repository.support.IgniteRepositoryFactoryBean;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.*;
@@ -97,7 +95,7 @@ public class INKRepositoryFactoryBean<T extends Repository<V, K>, V, K extends S
 
 
     private INKIgniteRepositoryFactory createFactory(String cacheName) {
-        final var ret = new INKIgniteRepositoryFactory(ctx, repositoryInterface, cacheName, false);
+        final var ret = new INKIgniteRepositoryFactory(ctx, repositoryInterface, cacheName);
         ret.setQueryLookupStrategyKey(queryLookupStrategyKey);
         ret.setNamedQueries(namedQueries);
         ret.setEvaluationContextProvider(

@@ -24,6 +24,7 @@ import org.apache.ignite.springdata22.repository.config.RepositoryConfig;
 import org.apache.ignite.springdata22.repository.query.IgniteQuery;
 import org.apache.ignite.springdata22.repository.query.IgniteQueryGenerator;
 import org.apache.ignite.springdata22.repository.query.IgniteRepositoryQuery;
+import org.apache.ignite.springdata22.repository.support.IgniteRepositoryFactory;
 import org.apache.ignite.springdata22.repository.support.IgniteRepositoryImpl;
 import org.springframework.beans.factory.config.BeanExpressionContext;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -44,22 +45,11 @@ import org.springframework.util.StringUtils;
 import java.util.Optional;
 
 /**
- * Crucial for spring-data functionality class. Create proxies for repositories.
- * <p>
- * Supports multiple Ignite Instances on same JVM.
- * <p>
- * This is pretty useful working with Spring repositories bound to different Ignite intances within same application.
- *
- * @author Apache Ignite Team
- * @author Manuel Núñez (manuel.nunez@hawkore.com)
+ * Copied from IgniteRepositoryFactory. Altered so that:
+ * - the cacheName is given via the constructor, NOT via @RepositoryConfig annotation.
+ * - @RepositoryConfig does not have to have a name
  */
 public class INKIgniteRepositoryFactory extends RepositoryFactorySupport {
-    /** Spring application expression resolver */
-    private final StandardBeanExpressionResolver resolver = new StandardBeanExpressionResolver();
-
-    /** Spring application bean expression context */
-    private final BeanExpressionContext beanExpressionContext;
-
     /** Ignite cache proxy instance associated with the current repository. */
     private final IgniteCacheProxy<?, ?> cache;
 
@@ -70,24 +60,19 @@ public class INKIgniteRepositoryFactory extends RepositoryFactorySupport {
      * @param ctx Spring Application context.
      * @param repoInterface Repository interface.
      */
-    public INKIgniteRepositoryFactory(ApplicationContext ctx, Class<?> repoInterface, String cacheName, boolean autoCreateCache) {
+    public INKIgniteRepositoryFactory(ApplicationContext ctx, Class<?> repoInterface, String cacheName) {
         ignite = ctx.getBean(IgniteProxy.class, repoInterface);
-
-        beanExpressionContext = new BeanExpressionContext(
-            new DefaultListableBeanFactory(ctx.getAutowireCapableBeanFactory()),
-            null);
 
         Assert.hasText(cacheName, "Invalid configuration for repository " + repoInterface.getName() +
             ". Set a name of an Apache Ignite cache using " + RepositoryConfig.class.getName() +
             " annotation to map this repository to the underlying cache.");
 
-       cache = autoCreateCache ? ignite.getOrCreateCache(cacheName) : ignite.cache(cacheName);
+       cache = ignite.cache(cacheName);
 
         if (cache == null) {
             throw new IllegalArgumentException(
                 "Cache '" + cacheName + "' not found for repository interface " + repoInterface.getName()
-                    + ". Please, add a cache configuration to ignite configuration"
-                    + " or pass autoCreateCache=true to " + RepositoryConfig.class.getName() + " annotation.");
+                    + ". Please, add a cache configuration to ignite configuration.");
         }
     }
 
@@ -109,16 +94,6 @@ public class INKIgniteRepositoryFactory extends RepositoryFactorySupport {
     /** {@inheritDoc} */
     @Override protected Class<?> getRepositoryBaseClass(RepositoryMetadata metadata) {
         return IgniteRepositoryImpl.class;
-    }
-
-    /**
-     * Evaluate the SpEL expression
-     *
-     * @param spelExpression SpEL expression
-     * @return the result of execution of the SpEL expression
-     */
-    private String evaluateExpression(String spelExpression) {
-        return (String)resolver.evaluate(spelExpression, beanExpressionContext);
     }
 
     /** {@inheritDoc} */
@@ -166,41 +141,6 @@ public class INKIgniteRepositoryFactory extends RepositoryFactorySupport {
      * @return {@code true} if query is SqlFieldsQuery.
      */
     public static boolean isFieldQuery(String qry) {
-        String qryUpperCase = qry.toUpperCase();
-
-        return isStatement(qryUpperCase) && !qryUpperCase.matches("^SELECT\\s+(?:\\w+\\.)?+\\*.*");
-    }
-
-    /**
-     * Evaluates if the query starts with a clause.<br>
-     * <code>SELECT, INSERT, UPDATE, MERGE, DELETE</code>
-     *
-     * @param qryUpperCase Query string in upper case.
-     * @return {@code true} if query is full SQL statement.
-     */
-    private static boolean isStatement(String qryUpperCase) {
-        return qryUpperCase.matches("^\\s*SELECT\\b.*") ||
-            // update
-            qryUpperCase.matches("^\\s*UPDATE\\b.*") ||
-            // delete
-            qryUpperCase.matches("^\\s*DELETE\\b.*") ||
-            // merge
-            qryUpperCase.matches("^\\s*MERGE\\b.*") ||
-            // insert
-            qryUpperCase.matches("^\\s*INSERT\\b.*");
-    }
-
-    /**
-     * @return Configuration of the specified repository.
-     * @throws IllegalArgumentException If no configuration is specified.
-     * @see RepositoryConfig
-     */
-    static RepositoryConfig getRepositoryConfiguration(Class<?> repoInterface) {
-        RepositoryConfig cfg = repoInterface.getAnnotation(RepositoryConfig.class);
-
-        Assert.notNull(cfg, "Invalid configuration for repository " + repoInterface.getName() + ". " +
-            RepositoryConfig.class.getName() + " annotation must be specified for each repository interface.");
-
-        return cfg;
+        return IgniteRepositoryFactory.isFieldQuery(qry);
     }
 }
