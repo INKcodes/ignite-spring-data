@@ -1,5 +1,6 @@
 package ink;
 
+import org.apache.ignite.springdata22.repository.IgniteRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.*;
@@ -31,7 +32,7 @@ import java.util.Optional;
  * @param <V>
  * @param <K>
  */
-public class INKRepositoryFactoryBean<T extends Repository<V, K>, V, K extends Serializable> extends RepositoryFactoryBeanSupport<T, V, K> implements InitializingBean, ApplicationContextAware, BeanClassLoaderAware,
+public class INKRepositoryFactoryBean<T extends IgniteRepository<V, K>, V, K extends Serializable> extends RepositoryFactoryBeanSupport<T, V, K> implements InitializingBean, ApplicationContextAware, BeanClassLoaderAware,
         BeanFactoryAware, ApplicationEventPublisherAware {
 
     private ApplicationContext ctx;
@@ -44,6 +45,11 @@ public class INKRepositoryFactoryBean<T extends Repository<V, K>, V, K extends S
     private BeanFactory beanFactory;
     private ApplicationEventPublisher publisher;
     private final Class<? extends T> repositoryInterface;
+
+
+    public Class<? extends T> getRepositoryInterface() {
+        return repositoryInterface;
+    }
 
     /**
      * @param repoInterface Repository interface.
@@ -116,7 +122,7 @@ public class INKRepositoryFactoryBean<T extends Repository<V, K>, V, K extends S
         return ret;
     }
 
-    public SampleRepository getRepo(String cacheName) {
+    public T getRepo(String cacheName) {
         RepositoryComposition.RepositoryFragments customImplementationFragment = customImplementation
                 .map(RepositoryComposition.RepositoryFragments::just)
                 .orElseGet(RepositoryComposition.RepositoryFragments::empty);
@@ -125,7 +131,7 @@ public class INKRepositoryFactoryBean<T extends Repository<V, K>, V, K extends S
                 .orElseGet(RepositoryComposition.RepositoryFragments::empty)
                 .append(customImplementationFragment);
 
-        return Lazy.of(() -> createFactory(cacheName).getRepository(SampleRepository.class, repositoryFragmentsToUse)).get();
+        return Lazy.of(() -> createFactory(cacheName).getRepository(repositoryInterface, repositoryFragmentsToUse)).get();
     }
 
     @Override

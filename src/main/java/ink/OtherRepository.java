@@ -6,6 +6,6 @@ import org.apache.ignite.springdata22.repository.config.RepositoryConfig;
 import java.util.Collection;
 
 @RepositoryConfig
-public interface SampleRepository extends IgniteRepository<SampleEntity, Integer> {
-    Collection<SampleEntity> findAllByName(String name);
+public interface OtherRepository extends IgniteRepository<OtherEntity, Integer> {
+    Collection<OtherEntity> findAllByName(String name);
 }

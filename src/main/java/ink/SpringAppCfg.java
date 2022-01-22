@@ -31,7 +31,13 @@ public class SpringAppCfg {
         ccfg2.setIndexedTypes(Integer.class, SampleEntity.class);
         CacheConfiguration<Integer, SampleEntity> ccfg3 = new CacheConfiguration<>("SAMPLE_3");
         ccfg3.setIndexedTypes(Integer.class, SampleEntity.class);
-        cfg.setCacheConfiguration(ccfg1, ccfg2, ccfg3);
+        CacheConfiguration<Integer, OtherEntity> ccfg4 = new CacheConfiguration<>("OTHER_1");
+        ccfg4.setIndexedTypes(Integer.class, OtherEntity.class);
+        CacheConfiguration<Integer, OtherEntity> ccfg5 = new CacheConfiguration<>("OTHER_2");
+        ccfg5.setIndexedTypes(Integer.class, OtherEntity.class);
+        CacheConfiguration<Integer, OtherEntity> ccfg6 = new CacheConfiguration<>("OTHER_3");
+        ccfg6.setIndexedTypes(Integer.class, OtherEntity.class);
+        cfg.setCacheConfiguration(ccfg1, ccfg2, ccfg3, ccfg4, ccfg5, ccfg6);
 
         return Ignition.start(cfg);
     }
