@@ -23,6 +23,14 @@ import org.springframework.data.util.Lazy;
 import java.io.Serializable;
 import java.util.Optional;
 
+/**
+ * Copied from {@link org.apache.ignite.springdata22.repository.support.IgniteRepositoryFactoryBean}. Altered so that:
+ * - there is a new method createFactory, which takes the cacheName as a parameter.
+ * - a public methode getRepo to get the repository for the given cache name.
+ * @param <T>
+ * @param <V>
+ * @param <K>
+ */
 public class INKRepositoryFactoryBean<T extends Repository<V, K>, V, K extends Serializable> extends RepositoryFactoryBeanSupport<T, V, K> implements InitializingBean, ApplicationContextAware, BeanClassLoaderAware,
         BeanFactoryAware, ApplicationEventPublisherAware {
 
@@ -92,7 +100,6 @@ public class INKRepositoryFactoryBean<T extends Repository<V, K>, V, K extends S
     public void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
         this.publisher = publisher;
     }
-
 
     private INKIgniteRepositoryFactory createFactory(String cacheName) {
         final var ret = new INKIgniteRepositoryFactory(ctx, repositoryInterface, cacheName);
