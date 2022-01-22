@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EnableIgniteRepositories
+@EnableIgniteRepositories(repositoryFactoryBeanClass = INKRepositoryFactoryBean.class)
 public class SpringAppCfg {
     /**
      * Creating Apache Ignite instance bean. A bean will be passed
@@ -24,6 +24,14 @@ public class SpringAppCfg {
 
         // Enabling peer-class loading feature.
         cfg.setPeerClassLoadingEnabled(true);
+
+        CacheConfiguration<Integer, SampleEntity> ccfg1 = new CacheConfiguration<>("SAMPLE_1");
+        ccfg1.setIndexedTypes(Integer.class, SampleEntity.class);
+        CacheConfiguration<Integer, SampleEntity> ccfg2 = new CacheConfiguration<>("SAMPLE_2");
+        ccfg2.setIndexedTypes(Integer.class, SampleEntity.class);
+        CacheConfiguration<Integer, SampleEntity> ccfg3 = new CacheConfiguration<>("SAMPLE_3");
+        ccfg3.setIndexedTypes(Integer.class, SampleEntity.class);
+        cfg.setCacheConfiguration(ccfg1, ccfg2, ccfg3);
 
         return Ignition.start(cfg);
     }

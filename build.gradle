@@ -29,6 +29,7 @@ dependencies {
 	implementation "org.apache.ignite:ignite-indexing:${ignite_version}"
 	implementation "org.apache.ignite:ignite-spring:${ignite_version}"
 	implementation "org.springframework.data:spring-data-commons"
+	implementation("com.google.guava:guava:31.0.1-jre")
 }
 
 test {
